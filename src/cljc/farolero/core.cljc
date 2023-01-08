@@ -7,7 +7,9 @@
              [clojure.stacktrace :as st])
        :cljs ([goog.string :as gstring]
               [goog.string.format]))
-   [farolero.protocols :refer [#?(:cljs Jump) args is-target?]]
+   [farolero.protocols :refer [#?(:cljs Jump) args is-target?
+                               ICondition handles?]]
+   [farolero.condition :refer [condition]]
    [farolero.signal :refer [make-signal]])
   #?(:cljs
      (:require-macros
@@ -356,6 +358,22 @@
                                :arglist vector?
                                :body (s/* any?)))
 
+(defn make-condition
+  ([type]
+   (condition type "" {}))
+  ([type msg]
+   (condition type msg {}))
+  ([type msg map]
+   (condition type msg map)))
+(s/fdef make-condition
+  :args (s/or :arity-1 (s/cat :type qualified-keyword?)
+              :arity-2 (s/cat :type qualified-keyword?
+                              :msg string?)
+              :arity-3 (s/cat :type qualified-keyword?
+                              :msg string?
+                              :map (s/map-of any? any?))))
+
+
 (macros/deftime
 (defmacro handler-case
   "Runs the `expr` with signal handlers bound, returning the value from the handler on signal.
@@ -623,6 +641,8 @@
   [condition handler]
   (boolean
    (or (isa? condition handler)
+       (and (satisfies? ICondition condition)
+            (handles? condition handler))
        (isa? (type condition) handler))))
 (s/fdef handles-condition?
   :args (s/cat :condition ::condition

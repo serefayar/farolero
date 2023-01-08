@@ -7,3 +7,8 @@
     "Returns an argument list used in the construction of the [[Jump]].")
   (is-target? [_ v]
     "Checks to see if the value is this jump's target."))
+
+(defprotocol ICondition
+  "internal protocol for conditions"
+  (handles? [_ v]
+    "Check if condition can handle."))

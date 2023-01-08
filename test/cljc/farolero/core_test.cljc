@@ -364,6 +364,11 @@
                  (:no-error [_] (sut/error "foo")))
              (::sut/error [& _args] :good)))
         "no-error clause is run outside the handlers for the given case")
+  (t/is (= :good
+           (handler-case
+            (sut/signal (sut/make-condition ::a-cond))
+            (::a-cond [_] :good)))
+        "grap condition satisfied ICondition protocol")
   (let [state (volatile! nil)]
     (handler-case
         (sut/error "foo")
